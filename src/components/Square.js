@@ -2,7 +2,8 @@ function Square({
     isLight,
     index,
     selected,
-    onClick
+    onClick,
+    piece
 }) {
 
     return (
@@ -17,9 +18,15 @@ function Square({
                     ? "#f0d9b5"
                     : "#b58863",
                 border: "1px solid black",
-                cursor: "pointer"
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: "40px",
+                userSelect: "none"
             }}
         >
+            {piece}
         </div>
     );
 }

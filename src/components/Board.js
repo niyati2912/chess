@@ -5,6 +5,39 @@ function Board() {
 
     const [selectedSquare, setSelectedSquare] = useState(null);
 
+    const [board, setBoard] = useState([
+    "♜", "♞", "♝", "♛", "♚", "♝", "♞", "♜",
+    "♟", "♟", "♟", "♟", "♟", "♟", "♟", "♟",
+
+    null, null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null,
+
+    "♙", "♙", "♙", "♙", "♙", "♙", "♙", "♙",
+    "♖", "♘", "♗", "♕", "♔", "♗", "♘", "♖"
+]);
+
+    function handleSquareClick(index) {
+
+    if (selectedSquare === null) {
+
+        if (board[index] !== null) {
+            setSelectedSquare(index);
+        }
+
+    } else {
+
+        const newBoard = [...board];
+
+        newBoard[index] = newBoard[selectedSquare];
+        newBoard[selectedSquare] = null;
+
+        setBoard(newBoard);
+        setSelectedSquare(null);
+    }
+}
+
     const squares = [];
 
     for (let i = 0; i < 64; i++) {
@@ -17,9 +50,10 @@ function Board() {
             <Square
                 key={i}
                 index={i}
+                piece={board[i]}
                 isLight={isLight}
                 selected={selectedSquare === i}
-                onClick={() => setSelectedSquare(i)}
+                onClick={() => handleSquareClick(i)}
             />
         );
     }

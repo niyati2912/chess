@@ -8,8 +8,8 @@ function Square({ isLight, selected, onClick, piece, isWhitePiece, highlighted }
         <div
             onClick={onClick}
             style={{
-                width: "80px",
-                height: "80px",
+                width: "100px",
+                height: "100px",
                 backgroundColor: bg,
                 cursor: "pointer",
                 display: "flex",

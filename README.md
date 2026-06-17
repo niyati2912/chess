@@ -1,70 +1,464 @@
-# Getting Started with Create React App
+# Chess Game in React
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
 
-## Available Scripts
+A modern chess application built using **React**, **JavaScript**, and **chess.js**. The project includes game logic, timers, themes, sounds, animations, move history, captured pieces, and support for playing against Stockfish AI.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+# Technology Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* React
+* JavaScript
+* chess.js
+* CSS
+* Web Workers
+* HTML5 Audio API
+* Stockfish
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+# Features
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Chess Board
 
-### `npm run build`
+* 8×8 board
+* Unicode chess pieces
+* Legal move highlighting
+* Selected square highlighting
+* Capture highlighting
+* Automatic pawn promotion to Queen
+* Move validation through chess.js
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Game Modes
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Play vs Friend
 
-### `npm run eject`
+Two-player local mode.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Play vs AI
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Human plays White.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Stockfish plays Black automatically.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## Chess Clock
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Initial time:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+10:00
+```
 
-### Code Splitting
+Features:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+* Active player's timer decreases.
+* Timer pauses during game pause.
+* Timer stops when game ends.
+* Timers reset when starting a new game.
+* Active player's clock is highlighted.
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Pause and Resume
 
-### Making a Progressive Web App
+Features:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+* Pause button
+* Resume button
+* Board disabled during pause
+* Timers stop during pause
+* Status updates accordingly
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Move History
 
-### Deployment
+Moves are stored in SAN format.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Example:
 
-### `npm run build` fails to minify
+```
+1. e4      e5
+2. Nf3     Nc6
+3. Bb5     a6
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Move history is displayed in a scrollable panel.
+
+---
+
+## Captured Pieces
+
+Captured pieces are displayed separately.
+
+### Above Board
+
+Black pieces captured by White.
+
+### Below Board
+
+White pieces captured by Black.
+
+---
+
+## Themes
+
+### Light Theme
+
+Wood-inspired interface.
+
+### Dark Theme
+
+Modern dark interface.
+
+Theme switching is implemented using CSS variables.
+
+---
+
+## Sound Effects
+
+Generated using the Web Audio API.
+
+### Move Sound
+
+Played after normal moves.
+
+### Capture Sound
+
+Played after captures.
+
+### Check Sound
+
+Played when a king is in check.
+
+### Game Over Sound
+
+Played on:
+
+* Checkmate
+* Timeout
+
+---
+
+## Game Over Detection
+
+### Checkmate
+
+Detects checkmate and declares the winner.
+
+### Stalemate
+
+Recognizes stalemate positions.
+
+### Draw
+
+Handles draw conditions.
+
+---
+
+## Timeout Detection
+
+If White reaches zero:
+
+```
+Time Out! Black Wins
+```
+
+If Black reaches zero:
+
+```
+Time Out! White Wins
+```
+
+Further moves are disabled.
+
+---
+
+## One-Minute Warning
+
+When a player's clock reaches one minute:
+
+* A popup appears.
+* An animated king enters from the side.
+* A speech bubble displays:
+
+```
+One Minute Left
+```
+
+The popup disappears automatically after five seconds.
+
+Animations used:
+
+* slideInLeft
+* bubbleBounce
+
+---
+
+## Winner Popup
+
+When the game ends:
+
+* Dark overlay appears.
+* Winner card is displayed.
+* Winner message is shown.
+* Animated queen enters.
+* New Game button is provided.
+
+---
+
+## Confetti Animation
+
+Confetti particles are generated dynamically.
+
+Animation:
+
+```css
+@keyframes confettiFall
+```
+
+Triggered after victory.
+
+---
+
+## Stockfish AI
+
+Implemented through a Web Worker.
+
+Human:
+
+```
+White
+```
+
+AI:
+
+```
+Black
+```
+
+Flow:
+
+```
+Player Move
+      ↓
+AI Thinking
+      ↓
+Best Move Computed
+      ↓
+AI Move Executed
+```
+
+Stockfish commands:
+
+```javascript
+engine.postMessage(
+    "position fen " + game.fen()
+);
+
+engine.postMessage(
+    "go movetime 500"
+);
+```
+
+---
+
+## Background Image
+
+Custom chess-themed wallpaper.
+
+CSS properties:
+
+```css
+background-size: cover;
+background-position: center;
+```
+
+A translucent overlay is added for readability.
+
+---
+
+# Styling
+
+The interface uses:
+
+### Box Shadows
+
+```css
+box-shadow
+```
+
+### Rounded Corners
+
+```css
+border-radius
+```
+
+### CSS Variables
+
+Used for theme support.
+
+### Animations
+
+* slideInLeft
+* slideInRight
+* bubbleBounce
+* popupScaleIn
+* confettiFall
+* fadeIn
+
+---
+
+# State Variables
+
+```javascript
+moveHistorySan
+
+selectedSquare
+
+legalMoves
+
+whiteTime
+blackTime
+
+paused
+
+theme
+
+gameOverInfo
+
+oneMinuteWarning
+
+playAI
+
+isThinking
+```
+
+---
+
+# React Hooks Used
+
+## useState
+
+Manages game and UI state.
+
+## useEffect
+
+Handles:
+
+* Timers
+* Sounds
+* Warnings
+* Game over detection
+* Stockfish communication
+
+## useMemo
+
+Optimizes:
+
+* Chess object reconstruction
+* Board generation
+* Move history
+* Captured pieces
+
+## useRef
+
+Stores:
+
+* Warning flags
+* Sound indices
+
+---
+
+# Folder Structure
+
+```
+src/
+│
+├── components/
+│     Board.js
+│     Square.js
+│
+├── chess.jfif
+│
+├── App.js
+│
+public/
+│
+├── stockfish-18-lite-single.js
+├── stockfish-18-lite-single.wasm
+│
+package.json
+```
+
+---
+
+# Future Improvements
+
+## Additional Themes
+
+* Wood
+* Purple
+* Pink
+* Neon
+
+## Drag-and-Drop Movement
+
+Replace click-based movement.
+
+## Multiplayer Support
+
+Implement using Socket.io.
+
+## User Accounts
+
+Authentication and rating system.
+
+## Opening Explorer
+
+Display opening names.
+
+## PGN Export
+
+Allow downloading completed games.
+
+## Undo Move
+
+Move rollback functionality.
+
+## Save and Load Games
+
+Store and retrieve PGN/FEN.
+
+---
+
+# Learning Outcomes
+
+This project provided practical experience with:
+
+* React Hooks
+* State management
+* useEffect and useMemo
+* chess.js
+* Stockfish integration
+* Web Workers
+* CSS animations
+* Web Audio API
+* Game logic implementation
+* Component-based architecture
+* UI/UX design
+* Performance optimization
+* Debugging complex state interactions
+
+---
+
+# Author
+
+**Niyati Aggarwal**
+
+Built using React, chess.js, and Stockfish to create a complete and interactive chess experience.

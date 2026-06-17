@@ -17,8 +17,8 @@ function toSquare(index) {
 }
 
 const THEMES = {
-    light: { "--board-border": "#3e2723", "--accent": "#eb2592", "--panel-bg": "rgba(34,34,34,0.92)", "--bg-overlay": "rgba(255,255,255,0.55)" },
-    dark:  { "--board-border": "#000000", "--accent": "#06b6d4", "--panel-bg": "rgba(20,20,20,0.92)", "--bg-overlay": "rgba(0,0,0,0.55)" },
+    light: { "--board-border": "#3e2723", "--accent": "#eb7cb9", "--panel-bg": "rgba(34,34,34,0.92)", "--bg-overlay": "rgba(255,255,255,0.55)" },
+    dark:  { "--board-border": "#000000", "--accent": "#82d3e1", "--panel-bg": "rgba(20,20,20,0.92)", "--bg-overlay": "rgba(0,0,0,0.55)" },
 };
 
 function playTone(freq, duration = 150, type = "sine") {
@@ -148,6 +148,8 @@ function Board() {
     const [theme, setTheme] = useState("light");
     const [gameOverInfo, setGameOverInfo] = useState(null);
     const [oneMinuteWarning, setOneMinuteWarning] = useState(null);
+    const [playAI, setPlayAI] = useState(false);
+    const [isThinking, setIsThinking] = useState(false);
 
     const warnedRef = useRef({ white: false, black: false });
     const lastSoundIndexRef = useRef(0);
@@ -266,7 +268,8 @@ function Board() {
     }
 
     function handleSquareClick(index) {
-        if (isGameOver || paused) return;
+        if (isGameOver || paused || isThinking) return;
+        if (playAI && game.turn() === "b") return;
 
         const piece = board[index];
         const squareName = toSquare(index);
@@ -310,6 +313,7 @@ function Board() {
         setPaused(false);
         setGameOverInfo(null);
         setOneMinuteWarning(null);
+        setIsThinking(false);
         warnedRef.current = { white: false, black: false };
         lastSoundIndexRef.current = 0;
     }
@@ -340,6 +344,49 @@ function Board() {
         moveRows.push({ num: i / 2 + 1, white: moveHistorySan[i], black: moveHistorySan[i + 1] });
     }
 
+    // Stockfish runs as a Web Worker loaded from /public, not as a bundled npm import.
+    // Copy stockfish-18-lite-single.js AND stockfish-18-lite-single.wasm from
+    // node_modules/stockfish/bin/ into your public/ folder for this to resolve.
+    const engine = useMemo(
+        () => new Worker(process.env.PUBLIC_URL + "/stockfish-18-lite-single.js"),
+        []
+    );
+
+    useEffect(() => {
+        if (!playAI || game.turn() !== "b" || isGameOver || paused) {
+            return;
+        }
+
+        const handleBestmove = (event) => {
+            const line = event.data;
+            if (line.startsWith("bestmove")) {
+                setIsThinking(false);
+                const move = line.split(" ")[1];
+
+                if (move === "(none)") return;
+
+                const from = move.substring(0, 2);
+                const to = move.substring(2, 4);
+                const tempGame = new Chess(game.fen());
+                const result = tempGame.move({ from, to, promotion: "q" });
+
+                if (result) {
+                    setMoveHistorySan((prev) => [...prev, result.san]);
+                }
+            }
+        };
+
+        engine.onmessage = handleBestmove;
+
+        const timeout = setTimeout(() => {
+            setIsThinking(true);
+            engine.postMessage("position fen " + game.fen());
+            engine.postMessage("go depth 12");
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [playAI, game, isGameOver, paused, engine]);
+
     return (
         <div className="chess-app-wrapper" style={THEMES[theme]}>
             <style>{boardStyles}</style>
@@ -362,6 +409,22 @@ function Board() {
             </div>
 
             <div className="action-panel">
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "8px" }}>
+                    <button
+                        className={`btn-large ${!playAI ? "btn-newgame" : "btn-pause"}`}
+                        onClick={() => { setPlayAI(false); handleNewGame(); }}
+                        style={{ fontSize: "14px", padding: "12px 24px" }}
+                    >
+                        Play vs Friend
+                    </button>
+                    <button
+                        className={`btn-large ${playAI ? "btn-newgame" : "btn-pause"}`}
+                        onClick={() => { setPlayAI(true); handleNewGame(); }}
+                        style={{ fontSize: "14px", padding: "12px 24px" }}
+                    >
+                        Play vs AI
+                    </button>
+                </div>
                 <button className="btn-large btn-newgame" onClick={handleNewGame}>New Game</button>
                 <button
                     className={`btn-large ${paused ? "btn-resume" : "btn-pause"}`}
@@ -412,7 +475,9 @@ function Board() {
                     ))}
                 </div>
 
-                <div className={`status-text ${isGameOver ? "status-gameover" : ""}`}>{getStatus()}</div>
+                <div className={`status-text ${isGameOver ? "status-gameover" : ""}`}>
+                    {isThinking ? "🤖 Thinking..." : getStatus()}
+                </div>
             </div>
 
             {oneMinuteWarning && (
